@@ -11,75 +11,75 @@ const todayLabel = document.querySelector('#today-label');
 
 const demoLessons = [
   {
-    matches: ['photosynthesis', 'plant', 'leaves change color', 'leaves changing color', 'autumn'],
-    title: 'A small lesson in plants',
+    matches: ['variable', 'variables', 'let', 'const', 'var', 'data type', 'primitive type'],
+    title: 'A small lesson in variables',
     paragraphs: [
-      'Plants use photosynthesis to turn light into stored chemical energy. In leaves, chlorophyll captures sunlight and helps combine water from the roots with carbon dioxide from the air.',
-      'That process makes sugars the plant can use to grow, and releases oxygen along the way. In autumn, many trees stop making as much chlorophyll, so other pigments already in the leaves become easier to see.'
+      'A variable is a named place in your program to keep a value. In JavaScript, let is useful when you plan to reassign the variable, while const prevents reassignment and is a good default when the binding should stay the same.',
+      'A const object can still have its properties changed; const protects the binding, not the contents. Choosing clear names and understanding the value’s type make code easier to follow.'
     ]
   },
   {
-    matches: ['gravity', 'fall', 'moon', 'orbit'],
-    title: 'A small lesson in gravity',
+    matches: ['function', 'parameter', 'argument', 'callback', 'arrow function', 'recursion', 'recursive'],
+    title: 'A small lesson in functions',
     paragraphs: [
-      'Gravity is the attraction between things that have mass. Earth’s gravity pulls objects toward its center, which is why a dropped pencil falls instead of drifting away.',
-      'The Moon is also pulled by Earth, but its sideways motion keeps it continually falling around our planet. That balance is what we call an orbit.'
+      'A function packages steps so you can run them when needed. Parameters are the named inputs in its definition; arguments are the actual values passed when you call it. A return value is what the function gives back.',
+      'Small functions are easier to understand and test. A recursive function calls itself on a smaller problem, and needs a base case that stops the calls.'
     ]
   },
   {
-    matches: ['rainbow', 'light', 'color'],
-    title: 'A small lesson in light',
+    matches: ['for loop', 'while loop', 'loop', 'iteration', 'iterate'],
+    title: 'A small lesson in loops',
     paragraphs: [
-      'Sunlight looks white, but it contains many colors. When light enters a raindrop it bends, reflects inside, and bends again as it leaves.',
-      'Different colors bend by slightly different amounts, spreading the light into an arc of color. You usually see a rainbow when the Sun is behind you and rain is ahead.'
+      'A loop repeats a block of code, often once for each item or until a condition changes. A for loop is handy when you know what you are iterating over; a while loop continues as long as its condition is true.',
+      'Make sure each iteration moves toward the stopping condition. Otherwise, the loop may never end. For arrays, methods like map and filter can express common transformations clearly.'
     ]
   },
   {
-    matches: ['derivative', 'calculus', 'slope', 'rate of change'],
-    title: 'A small lesson in calculus',
+    matches: ['array', 'arrays', 'object', 'objects', 'list', 'index', 'property', 'properties'],
+    title: 'A small lesson in arrays and objects',
     paragraphs: [
-      'A derivative describes how quickly something is changing at a particular moment. If a graph shows distance over time, its derivative at one point is the object’s speed at that moment.',
-      'You can picture it as the slope of a tiny piece of the curve. A steeper slope means a faster rate of change; a flat slope means little or no change right then.'
+      'An array stores an ordered collection of values. Each item has a zero-based index, so the first item is at index 0. Arrays are useful when you need to work with a sequence of similar items.',
+      'An object stores related values under named properties, like a user’s name and email. Use arrays for ordered collections and objects for records with named fields.'
     ]
   },
   {
-    matches: ['atom', 'molecule', 'matter'],
-    title: 'A small lesson in matter',
+    matches: ['async', 'await', 'promise', 'asynchronous', 'event loop'],
+    title: 'A small lesson in asynchronous JavaScript',
     paragraphs: [
-      'An atom is a tiny building block of ordinary matter. It has a dense center made of protons and neutrons, with electrons occupying the space around it.',
-      'Atoms can join through chemical bonds. When atoms connect in particular arrangements, they form molecules — water, for example, is made from two hydrogen atoms and one oxygen atom.'
+      'Asynchronous code lets JavaScript start work that takes time, such as a network request, without freezing the rest of the page. A Promise represents a result that may be available now, later, or not at all.',
+      'The async and await syntax lets you write Promise-based code in a readable sequence. Use try/catch around awaited work when you need to handle failures.'
     ]
   },
   {
-    matches: ['habit', 'habits', 'routine', 'stick'],
-    title: 'A small lesson in habits',
+    matches: ['api', 'http', 'rest', 'endpoint', 'fetch', 'request', 'response', 'status code'],
+    title: 'A small lesson in APIs',
     paragraphs: [
-      'A habit is a behavior that becomes easier to repeat because it is linked to a familiar cue and context. Making the first step small and attaching it to something you already do can lower the effort of getting started.',
-      'Repeating the behavior in a stable situation gives your brain a chance to learn the pattern. It is practice, not a perfect streak, that makes a routine feel more familiar.'
+      'An API is a defined way for programs to communicate. A web API commonly accepts an HTTP request at an endpoint and sends back a response, often with JSON data.',
+      'The request method describes the action, such as GET to read or POST to submit data. Check the status code and handle errors instead of assuming every request succeeds.'
     ]
   },
   {
-    matches: ['democracy', 'government', 'vote', 'election'],
-    title: 'A small lesson in civic life',
+    matches: ['git', 'commit', 'branch', 'merge', 'version control', 'pull request'],
+    title: 'A small lesson in Git',
     paragraphs: [
-      'Democracy is a way of organizing public decisions in which people have a meaningful role. In a representative democracy, people choose representatives to debate and make many decisions on their behalf.',
-      'The details differ across countries, but elections, public participation, and limits on political power are common parts of democratic systems.'
+      'Git is a version control tool that records changes to your project. A commit saves a checkpoint with a message explaining what changed.',
+      'A branch lets you work on a change separately from the main line of development. When the work is ready, you can merge it back, often after reviewing it in a pull request.'
     ]
   },
   {
-    matches: ['recursion', 'program', 'code', 'javascript'],
-    title: 'A small lesson in programming',
+    matches: ['sql', 'database', 'query', 'table', 'primary key', 'foreign key'],
+    title: 'A small lesson in databases',
     paragraphs: [
-      'Recursion is a technique where a function solves a problem by calling itself on a smaller version of that problem. It is useful when a task naturally contains smaller copies of itself, such as exploring nested folders.',
-      'A recursive solution needs a base case — a condition that stops the calls — as well as a step that makes progress toward that case.'
+      'A relational database organizes information into tables with rows and columns. SQL is the language commonly used to read and change that data.',
+      'A primary key identifies a row; a foreign key links rows in related tables. Start with a SELECT query to choose the columns and rows you need.'
     ]
   },
   {
-    matches: ['inflation', 'price', 'prices', 'economy'],
-    title: 'A small lesson in economics',
+    matches: ['debug', 'debugging', 'bug', 'test', 'testing', 'unit test', 'stack trace', 'error'],
+    title: 'A small lesson in debugging and tests',
     paragraphs: [
-      'Inflation is a broad rise in prices over time. When prices rise, the same amount of money generally buys fewer goods and services than it did before.',
-      'It is usually measured by tracking the cost of a selected basket of items. The price of one item changing is not, by itself, the same thing as overall inflation.'
+      'Debugging is the process of finding and fixing the cause of a problem. First reproduce the issue, then inspect the error message, stack trace, and relevant variable values to narrow down where behavior differs from what you expected.',
+      'A unit test checks one small piece of behavior automatically. A useful test captures the bug with a failing case first, then keeps that case from breaking again later.'
     ]
   }
 ];
@@ -108,14 +108,19 @@ function saveHistory() {
   }
 }
 
+function matchesKeyword(question, keyword) {
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escapedKeyword}\\b`).test(question);
+}
+
 function getLesson(question) {
   const normalized = question.toLocaleLowerCase();
-  return demoLessons.find((lesson) => lesson.matches.some((word) => normalized.includes(word))) || {
-    title: 'A starting point for your question',
+  return demoLessons.find((lesson) => lesson.matches.some((word) => matchesKeyword(normalized, word))) || {
+    title: 'A starting point for your coding question',
     paragraphs: [
       `You asked: “${question}”`,
-      'This is a prepared demo response rather than a generated answer. A helpful way into a new topic is to name its key idea, look for a concrete example, and then ask what changes when one part of that example changes.',
-      'Try narrowing your question to one term or relationship, and use that as a trailhead for your next bit of learning.'
+      'This is a prepared demo response rather than an AI-generated answer. To explore a programming topic, identify the key concept, trace a small example, and notice how the output changes when you change one part.',
+      'Try narrowing your question to a language feature, tool, or error message for a more focused starting point.'
     ]
   };
 }
