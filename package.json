@@ -1,0 +1,10 @@
+{
+  "name": "studybuddy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A quiet place to ask questions and follow your curiosity.",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test"
+  }
+}
