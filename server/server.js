@@ -1,10 +1,12 @@
 const { createServer: createHttpServer } = require('node:http');
-const { readFile, stat } = require('node:fs/promises');
+const { mkdir, open, readFile, rename, stat, writeFile } = require('node:fs/promises');
 const path = require('node:path');
 
 const PUBLIC_DIR = path.resolve(__dirname, '..', 'public');
+const HISTORY_FILE = path.resolve(__dirname, '..', 'data', 'history.json');
 const MAX_BODY_SIZE = 16 * 1024;
 const MAX_QUESTION_LENGTH = 500;
+const MAX_HISTORY = 30;
 
 const demoLessons = [
   {
@@ -107,6 +109,53 @@ function sendJson(response, statusCode, payload) {
   response.end(JSON.stringify(payload));
 }
 
+function createHistoryStore(filePath) {
+  let writeQueue = Promise.resolve();
+  const initialized = (async () => {
+    await mkdir(path.dirname(filePath), { recursive: true });
+    try {
+      const handle = await open(filePath, 'wx');
+      await handle.writeFile('[]\n');
+      await handle.close();
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+    }
+  })();
+
+  async function readHistory() {
+    await initialized;
+    await writeQueue;
+    const contents = await readFile(filePath, 'utf8');
+    const history = JSON.parse(contents);
+    if (!Array.isArray(history)) {
+      throw new Error('History data must be a JSON array.');
+    }
+    return history;
+  }
+
+  function saveEntry(entry) {
+    const operation = writeQueue.then(async () => {
+      await initialized;
+      const contents = await readFile(filePath, 'utf8');
+      const history = JSON.parse(contents);
+      if (!Array.isArray(history)) {
+        throw new Error('History data must be a JSON array.');
+      }
+      const updatedHistory = [
+        entry,
+        ...history.filter((saved) => saved.question !== entry.question)
+      ].slice(0, MAX_HISTORY);
+      const temporaryPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+      await writeFile(temporaryPath, `${JSON.stringify(updatedHistory, null, 2)}\n`, 'utf8');
+      await rename(temporaryPath, filePath);
+    });
+    writeQueue = operation.catch(() => {});
+    return operation;
+  }
+
+  return { readHistory, saveEntry };
+}
+
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
     let size = 0;
@@ -179,13 +228,30 @@ async function serveStaticFile(request, response, pathname) {
   }
 }
 
-function createServer() {
+function createServer(options = {}) {
+  const historyStore = createHistoryStore(options.historyFile || HISTORY_FILE);
+
   return createHttpServer(async (request, response) => {
     let url;
     try {
       url = new URL(request.url, 'http://localhost');
     } catch {
       sendJson(response, 400, { error: 'Invalid request URL.' });
+      return;
+    }
+
+    if (url.pathname === '/api/history') {
+      if (request.method !== 'GET') {
+        response.setHeader('Allow', 'GET');
+        sendJson(response, 405, { error: 'Method not allowed.' });
+        return;
+      }
+      try {
+        sendJson(response, 200, { history: await historyStore.readHistory() });
+      } catch (error) {
+        console.error('Failed to read question history:', error);
+        sendJson(response, 500, { error: 'Unable to read question history.' });
+      }
       return;
     }
 
@@ -219,7 +285,21 @@ function createServer() {
         return;
       }
 
-      sendJson(response, 200, { question, ...getLesson(question) });
+      const lesson = getLesson(question);
+      const entry = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        question,
+        ...lesson,
+        createdAt: new Date().toISOString()
+      };
+      try {
+        await historyStore.saveEntry(entry);
+      } catch (error) {
+        console.error('Failed to save question history:', error);
+        sendJson(response, 500, { error: 'Unable to save question history.' });
+        return;
+      }
+      sendJson(response, 200, entry);
       return;
     }
 

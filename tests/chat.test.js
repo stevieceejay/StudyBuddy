@@ -1,12 +1,19 @@
 const assert = require('node:assert/strict');
+const { mkdtemp, readFile, rm } = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
 const { after, before, test } = require('node:test');
 const { createServer } = require('../server/server');
 
 let server;
 let baseUrl;
+let temporaryDirectory;
+let historyFile;
 
 before(async () => {
-  server = createServer();
+  temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), 'studybuddy-test-'));
+  historyFile = path.join(temporaryDirectory, 'data', 'history.json');
+  server = createServer({ historyFile });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   baseUrl = `http://127.0.0.1:${server.address().port}`;
 });
@@ -15,6 +22,7 @@ after(async () => {
   await new Promise((resolve, reject) => {
     server.close((error) => error ? reject(error) : resolve());
   });
+  await rm(temporaryDirectory, { recursive: true, force: true });
 });
 
 test('chat endpoint returns prepared lessons for junior developer topics', async () => {
@@ -66,4 +74,26 @@ test('chat endpoint rejects blank questions', async () => {
 
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { error: 'Question cannot be empty.' });
+});
+
+test('successful chat answers are persisted and available from the history endpoint', async () => {
+  const question = 'How should I name a Git branch?';
+  const chatResponse = await fetch(`${baseUrl}/api/chat`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question })
+  });
+  assert.equal(chatResponse.status, 200);
+  const answer = await chatResponse.json();
+
+  const historyResponse = await fetch(`${baseUrl}/api/history`);
+  assert.equal(historyResponse.status, 200);
+  const { history } = await historyResponse.json();
+  assert.equal(history[0].id, answer.id);
+  assert.equal(history[0].question, question);
+  assert.equal(history[0].title, 'A small lesson in Git');
+  assert.equal(typeof history[0].createdAt, 'string');
+
+  const savedFile = JSON.parse(await readFile(historyFile, 'utf8'));
+  assert.equal(savedFile[0].id, answer.id);
 });
