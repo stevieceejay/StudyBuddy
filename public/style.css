@@ -143,6 +143,10 @@ h1 em { color: var(--moss); font-style: normal; }
 .answer-copy p { margin: 0 0 12px; }
 .answer-copy p:last-child { margin-bottom: 0; }
 .answer-copy strong { color: #33382f; }
+.lesson-title { margin: 0 0 11px; font-size: 17px; }
+.answer-copy h4 { margin: 18px 0 6px; color: var(--moss-dark); font-size: 14px; }
+.lesson-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.error-message { color: #8c3d29; font-size: 13px; line-height: 1.6; }
 .answer-meta { display: flex; align-items: center; gap: 7px; margin-top: 20px; padding-top: 13px; border-top: 1px solid #ebe7dc; color: #929287; font: 10px 'DM Mono', monospace; }
 .answer-meta svg { width: 13px; height: 13px; color: var(--moss); }
 .loading-state { display: flex; align-items: center; gap: 12px; padding: 25px 2px; color: #73776a; font-size: 13px; }

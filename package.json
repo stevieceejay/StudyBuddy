@@ -5,6 +5,9 @@
   "description": "A quiet place to ask questions and follow your curiosity.",
   "scripts": {
     "start": "node server/server.js",
-    "test": "node --test"
-  }
+    "test": "node --test tests/chat.test.js tests/browser.test.js",
+    "test:live": "node --test tests/live.test.js"
+  },
+  "engines": { "node": ">=20.12" },
+  "dependencies": { "express": "^5.1.0" }
 }
