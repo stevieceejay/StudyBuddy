@@ -6,8 +6,10 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const HEADINGS = ['Core idea', 'Example', 'Common pitfall'];
 const lessonSchema = {
-  type: 'object', additionalProperties: false, required: ['title', 'sections'],
+  type: 'object', additionalProperties: false,
+  required: ['is_programming_related', 'title', 'sections'],
   properties: {
+    is_programming_related: { type: 'boolean' },
     title: { type: 'string' },
     sections: {
       type: 'array', minItems: 3, maxItems: 3,
@@ -26,7 +28,9 @@ function validText(value, max) {
   return typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 }
 function validateLesson(value) {
-  if (!hasKeys(value, ['title', 'sections']) || !validText(value.title, 200)
+  if (!hasKeys(value, ['is_programming_related', 'title', 'sections'])
+      || typeof value.is_programming_related !== 'boolean'
+      || !validText(value.title, 200)
       || !Array.isArray(value.sections) || value.sections.length !== 3
       || !value.sections.every((section, index) => hasKeys(section, ['heading', 'content'])
         && section.heading === HEADINGS[index] && validText(section.content, 10000))) {
@@ -126,6 +130,11 @@ function createApp(options = {}) {
       lesson = await requestLesson({ question, instructions, apiKey,
         model: options.model || process.env.OPENAI_MODEL || 'gpt-4o-mini', fetchImpl: options.fetchImpl || fetch });
     } catch (error) { return res.status(error.status || 502).json({ error: error.message }); }
+    if (!lesson.is_programming_related) {
+      return res.status(422).json({
+        error: 'StudyBuddy can only help with programming and software development questions. Ask about code, computer science, developer tools, or a software project.'
+      });
+    }
     const entry = { id: randomUUID(), question, title: lesson.title, sections: lesson.sections, createdAt: new Date().toISOString() };
     try { await historyStore.saveEntry(entry); }
     catch { return res.status(500).json({ error: 'Unable to save question history. Your lesson was not saved.' }); }

@@ -4,6 +4,7 @@ const path = require('node:path');
 const { test } = require('node:test');
 const { createServer, createHistoryStore } = require('../server/server');
 const lesson = {
+  is_programming_related: true,
   title: 'Understanding const',
   sections: [
     { heading: 'Core idea', content: 'const prevents reassignment of a binding.' },
@@ -51,6 +52,7 @@ test('validated lesson uses the prompt and strict schema; server generates metad
   assert.match(request.instructions, /Follow-up questions are allowed/);
   assert.equal(request.text.format.type, 'json_schema');
   assert.equal(request.text.format.strict, true);
+  assert.ok(request.text.format.schema.required.includes('is_programming_related'));
   assert.equal(request.text.format.schema.properties.sections.minItems, 3);
   assert.equal(request.text.format.schema.properties.sections.maxItems, 3);
   assert.equal(request.store, false);
@@ -61,6 +63,26 @@ test('invalid questions never call OpenAI or save history', async (t) => {
     assert.equal((await chat(body)).status, 400);
   }
   assert.equal(calls.length, 0);
+  assert.deepEqual(await (await fetch(`${base}/api/history`)).json(), { history: [] });
+});
+test('unrelated questions are rejected and never saved', async (t) => {
+  let classificationCalls = 0;
+  const { chat, base } = await setup(t, {
+    fetchImpl: async () => {
+      classificationCalls++;
+      return { ok: true, json: async () => envelope({
+        ...lesson,
+        is_programming_related: false,
+        title: 'A weather forecast',
+        sections: lesson.sections.map((section) => ({ ...section, content: 'This is not a programming question.' }))
+      }) };
+    }
+  });
+
+  const response = await chat({ question: 'What will the weather be tomorrow?' });
+  assert.equal(response.status, 422);
+  assert.match((await response.json()).error, /programming and software development/);
+  assert.equal(classificationCalls, 1);
   assert.deepEqual(await (await fetch(`${base}/api/history`)).json(), { history: [] });
 });
 test('malformed JSON, oversized bodies, unsupported methods and unknown API routes are handled', async (t) => {
@@ -75,7 +97,8 @@ test('malformed JSON, oversized bodies, unsupported methods and unknown API rout
 });
 test('every model field is validated, including exactly three ordered headings', async (t) => {
   const invalid = [null, [], {}, { ...lesson, title: '' }, { ...lesson, title: 42 }, { ...lesson, title: 'x'.repeat(201) },
-    { ...lesson, extra: true }, { ...lesson, sections: lesson.sections.slice(1) }, { ...lesson, sections: [...lesson.sections, lesson.sections[0]] },
+    { ...lesson, is_programming_related: 'yes' }, { ...lesson, extra: true },
+    { ...lesson, sections: lesson.sections.slice(1) }, { ...lesson, sections: [...lesson.sections, lesson.sections[0]] },
     { ...lesson, sections: [lesson.sections[1], lesson.sections[0], lesson.sections[2]] },
     ...[{}, { heading: 'Wrong', content: 'text' }, { heading: 'Core idea', content: '' }, { heading: 'Core idea', content: '  ' },
       { heading: 'Core idea', content: 42 }, { heading: 'Core idea', content: 'x'.repeat(10001) },

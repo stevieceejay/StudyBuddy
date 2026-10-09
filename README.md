@@ -35,9 +35,12 @@ prompt and history file stay outside that directory.
    whitespace, and enforces the 500-character limit. It reads teaching
    instructions from `prompts/studybuddy.md`.
 3. The backend calls the OpenAI Responses API with the server's key and a strict
-   JSON schema requiring a title and three sections. This uses OpenAI's
+   JSON schema requiring a programming-scope classification, title and three
+   sections. This uses OpenAI's
    [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
-4. The server independently checks every returned field, exact section order
+4. The server rejects questions classified as outside programming/software
+   development with HTTP 422 and does not save them. It independently checks
+   every returned field, exact section order
    (`Core idea`, `Example`, `Common pitfall`), nonempty text, size limits and
    unexpected fields. Incomplete responses, refusals and invalid JSON fail.
 5. The server creates a UUID and UTC ISO timestamp, then writes the complete
@@ -74,9 +77,11 @@ context in a follow-up question. There is no multi-turn conversation memory.
 
 ## Errors and limits
 
-Invalid questions/JSON receive HTTP 400, oversized bodies 413, missing
-configuration 503, OpenAI/network/invalid lesson errors 502, and history failures
-500. Upstream error bodies and secrets are not returned to the browser. OpenAI
+Empty or invalid questions/JSON receive HTTP 400, unrelated questions receive
+HTTP 422, oversized bodies 413, missing configuration 503, OpenAI/network/invalid
+lesson errors 502, and history failures 500. Scope classification is performed
+by the tutor model, so ambiguous questions may occasionally be misclassified.
+Upstream error bodies and secrets are not returned to the browser. OpenAI
 requests time out after 30 seconds. The form retains the question on failure.
 
 This class assignment uses a single Node process and one local JSON history
